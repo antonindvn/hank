@@ -23,10 +23,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger; import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.liveramp.hank.partition_server.FilesystemStatisticsAggregator;
 import com.liveramp.hank.partition_server.RuntimeStatisticsAggregator;
@@ -80,12 +82,21 @@ public final class Hosts {
   // Return true if all partitions assigned to that host for domains of the given domain group version
   // are at the correct version. And there are no deletable partitions.
   public static boolean isUpToDate(Host host, DomainGroup domainGroup) throws IOException {
-
-    if (domainGroup == null || domainGroup.getDomainVersions() == null) {
+    if (domainGroup == null) {
       return false;
     }
 
-    if (!allPartitionsUpToDate(host, domainGroup.getDomainVersions(), false)) {
+    Set<DomainAndVersion> domainVersions = domainGroup.getDomainVersions();
+
+    if (domainVersions == null) {
+      return false;
+    }
+
+    return isUpToDate(host, domainVersions);
+  }
+
+  public static boolean isUpToDate(Host host, Collection<DomainAndVersion> domainAndVersions) throws IOException {
+    if (!allPartitionsUpToDate(host, domainAndVersions, false)) {
       return false;
     }
 
